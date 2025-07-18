@@ -1,13 +1,13 @@
-package com.example;
+package com.your.package;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Testcontainers
-public class LiquibaseIntegrationTest {
+public class LiquibaseTestContainerIT {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
@@ -26,10 +26,11 @@ public class LiquibaseIntegrationTest {
             .withPassword("testpass");
 
     @DynamicPropertySource
-    static void overrideProperties(DynamicPropertyRegistry registry) {
+    static void overrideProps(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
         registry.add("spring.liquibase.enabled", () -> true);
     }
 
@@ -37,40 +38,10 @@ public class LiquibaseIntegrationTest {
     private DataSource dataSource;
 
     @Test
-    void testLiquibaseRanAndTableExists() throws Exception {
-        try (Connection conn = dataSource.getConnection();
-             ResultSet rs = conn.getMetaData().getTables(null, null, "customer", null)) {
-            assertThat(rs.next()).isTrue(); // customer table should exist
+    void liquibaseShouldHaveCreatedCustomerTable() throws Exception {
+        try (Connection connection = dataSource.getConnection()) {
+            ResultSet tables = connection.getMetaData().getTables(null, null, "customer", null);
+            assertThat(tables.next()).isTrue(); // Assert the 'customer' table exists
         }
     }
 }
-
-
-
-
-# src/test/resources/application-test.properties
-spring.datasource.url=jdbc:h2:mem:testdb;MODE=PostgreSQL
-spring.datasource.username=sa
-spring.datasource.password=
-spring.datasource.driver-class-name=org.h2.Driver
-spring.liquibase.change-log=classpath:/db/changelog/db.changelog-master.yaml
-spring.jpa.hibernate.ddl-auto=none
-
-
-
-
-@SpringBootTest
-@ActiveProfiles("test")
-public class LiquibaseH2Test {
-    @Autowired
-    private DataSource dataSource;
-
-    @Test
-    void tableExists() throws Exception {
-        try (Connection conn = dataSource.getConnection();
-             ResultSet rs = conn.getMetaData().getTables(null, null, "CUSTOMER", null)) {
-            assertThat(rs.next()).isTrue();
-        }
-    }
-}
- 
