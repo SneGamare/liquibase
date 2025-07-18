@@ -1,153 +1,46 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+package com.your.package;
 
-    <!-- Create schema if not exists -->
-    <changeSet id="000" author="snehal">
-        <sql>
-            CREATE SCHEMA IF NOT EXISTS plutus_ecollection;
-        </sql>
-    </changeSet>
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
-    <!-- Create plutus_finacle_transaction_details table -->
-    <changeSet id="100" author="snehal">
-        <preConditions onFail="MARK_RAN">
-            <sqlCheck expectedResult="1">
-                SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = 'plutus_ecollection'
-            </sqlCheck>
-            <not>
-                <tableExists tableName="plutus_finacle_transaction_details" schemaName="plutus_ecollection"/>
-            </not>
-        </preConditions>
-        <createTable tableName="plutus_finacle_transaction_details" schemaName="plutus_ecollection">
-            <column name="id" type="SERIAL">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="tran_date" type="DATE"/>
-            <column name="tran_id" type="VARCHAR(50)"/>
-            <column name="part_tran_srl_num" type="INTEGER"/>
-            <column name="del_flg" type="BOOLEAN"/>
-            <column name="tran_type" type="VARCHAR(20)"/>
-            <column name="tran_sub_type" type="VARCHAR(20)"/>
-            <column name="part_tran_type" type="VARCHAR(20)"/>
-            <column name="gl_sub_head_code" type="VARCHAR(20)"/>
-            <column name="acid" type="VARCHAR(50)"/>
-            <column name="value_date" type="DATE"/>
-            <column name="tran_amt" type="NUMERIC(18,2)"/>
-            <column name="tran_particular" type="TEXT"/>
-            <column name="entry_date" type="TIMESTAMP"/>
-            <column name="pstd_date" type="TIMESTAMP"/>
-            <column name="ref_num" type="VARCHAR(50)"/>
-            <column name="instrmnt_type" type="VARCHAR(20)"/>
-            <column name="instrmnt_date" type="DATE"/>
-            <column name="instrmnt_num" type="VARCHAR(50)"/>
-            <column name="tran_rmks" type="TEXT"/>
-            <column name="cust_id" type="VARCHAR(50)"/>
-            <column name="br_code" type="VARCHAR(20)"/>
-            <column name="crncy_code" type="VARCHAR(10)"/>
-            <column name="tran_crncy_code" type="VARCHAR(10)"/>
-            <column name="ref_amt" type="NUMERIC(18,2)"/>
-            <column name="sol_id" type="VARCHAR(20)"/>
-            <column name="bank_code" type="VARCHAR(20)"/>
-            <column name="trea_ref_num" type="VARCHAR(50)"/>
-            <column name="reversal_date" type="DATE"/>
-            <column name="reversal_value_date" type="DATE"/>
-            <column name="tran_particular_2" type="TEXT"/>
-            <column name="tran_particular_code" type="VARCHAR(20)"/>
-            <column name="tr_status" type="VARCHAR(20)"/>
-            <column name="party_code" type="VARCHAR(50)"/>
-            <column name="gl_date" type="DATE"/>
-            <column name="bank_id" type="VARCHAR(20)"/>
-            <column name="tran_free_code1" type="VARCHAR(50)"/>
-            <column name="tran_free_code2" type="VARCHAR(50)"/>
-            <column name="reversal_status" type="VARCHAR(20)"/>
-            <column name="available_amt" type="NUMERIC(18,2)"/>
-            <column name="acct_balance" type="NUMERIC(18,2)"/>
-            <column name="foracid" type="VARCHAR(50)"/>
-            <column name="acct_name" type="VARCHAR(100)"/>
-            <column name="acct_short_name" type="VARCHAR(50)"/>
-            <column name="last_tran_date_cr" type="DATE"/>
-            <column name="raw_json" type="JSONB"/>
-            <column name="received_at" type="TIMESTAMP"/>
-        </createTable>
-    </changeSet>
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.ResultSet;
 
-    <!-- Create plutus_client_configuration table -->
-    <changeSet id="101" author="snehal">
-        <preConditions onFail="MARK_RAN">
-            <sqlCheck expectedResult="1">
-                SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = 'plutus_ecollection'
-            </sqlCheck>
-            <not>
-                <tableExists tableName="plutus_client_configuration" schemaName="plutus_ecollection"/>
-            </not>
-        </preConditions>
-        <createTable tableName="plutus_client_configuration" schemaName="plutus_ecollection">
-            <column name="id" type="INT">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="master_account" type="VARCHAR(20)"/>
-            <column name="upi_source" type="VARCHAR(255)"/>
-            <column name="imps_source_system" type="VARCHAR(255)"/>
-            <column name="neft_source" type="VARCHAR(255)"/>
-            <column name="rtgs_source_system" type="VARCHAR(255)"/>
-            <column name="ift_source_system" type="VARCHAR(255)"/>
-            <column name="pg_source_system" type="VARCHAR(255)"/>
-            <column name="api_type" type="VARCHAR(255)"/>
-            <column name="clientname" type="VARCHAR(255)"/>
-            <column name="crn" type="VARCHAR(255)"/>
-            <column name="active_flag" type="BOOLEAN"/>
-            <column name="created_by" type="VARCHAR(100)"/>
-            <column name="modified_by" type="VARCHAR(100)"/>
-            <column name="created_date" type="TIMESTAMP"/>
-            <column name="modified_date" type="TIMESTAMP"/>
-        </createTable>
-    </changeSet>
+import static org.assertj.core.api.Assertions.assertThat;
 
-    <!-- Insert data into plutus_client_configuration -->
-    <changeSet id="102" author="snehal">
-        <preConditions onFail="MARK_RAN">
-            <tableExists tableName="plutus_client_configuration" schemaName="plutus_ecollection"/>
-        </preConditions>
-        <insert tableName="plutus_client_configuration" schemaName="plutus_ecollection">
-            <column name="id" value="7"/>
-            <column name="master_account" value="0045236716"/>
-            <column name="upi_source" value=""/>
-            <column name="imps_source_system" value=""/>
-            <column name="neft_source" value=""/>
-            <column name="rtgs_source_system" value=""/>
-            <column name="ift_source_system" value=""/>
-            <column name="pg_source_system" value=""/>
-            <column name="api_type" value=""/>
-            <column name="clientname" value="EVNREDCAP"/>
-            <column name="crn" value="500044874"/>
-            <column name="active_flag" value="true"/>
-            <column name="created_by" value="system"/>
-            <column name="modified_by" value="system"/>
-            <column name="created_date" valueDate="NOW()"/>
-            <column name="modified_date" valueDate="NOW()"/>
-        </insert>
-        <insert tableName="plutus_client_configuration" schemaName="plutus_ecollection">
-            <column name="id" value="8"/>
-            <column name="master_account" value="0048031110"/>
-            <column name="upi_source" value=""/>
-            <column name="imps_source_system" value=""/>
-            <column name="neft_source" value=""/>
-            <column name="rtgs_source_system" value=""/>
-            <column name="ift_source_system" value=""/>
-            <column name="pg_source_system" value=""/>
-            <column name="api_type" value=""/>
-            <column name="clientname" value="NEOIN"/>
-            <column name="crn" value="700058139"/>
-            <column name="active_flag" value="true"/>
-            <column name="created_by" value="system"/>
-            <column name="modified_by" value="system"/>
-            <column name="created_date" valueDate="NOW()"/>
-            <column name="modified_date" valueDate="NOW()"/>
-        </insert>
-    </changeSet>
+@SpringBootTest
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS plutus_ecollection",
+        "spring.datasource.driverClassName=org.h2.Driver",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.liquibase.enabled=true",
+        "spring.liquibase.default-schema=plutus_ecollection"
+})
+class LiquibaseH2IntegrationTest {
 
-</databaseChangeLog>
+    @Autowired
+    private DataSource dataSource;
+
+    @Test
+    void liquibaseShouldCreatePlutusTables() throws Exception {
+        try (Connection conn = dataSource.getConnection()) {
+            // Check table 1
+            try (ResultSet rs1 = conn.getMetaData().getTables(null, "PLUTUS_ECOLLECTION", "plutus_finacle_transaction_details", null)) {
+                assertThat(rs1.next())
+                        .withFailMessage("Expected table 'plutus_finacle_transaction_details' to exist")
+                        .isTrue();
+            }
+
+            // Check table 2
+            try (ResultSet rs2 = conn.getMetaData().getTables(null, "PLUTUS_ECOLLECTION", "plutus_client_configuration", null)) {
+                assertThat(rs2.next())
+                        .withFailMessage("Expected table 'plutus_client_configuration' to exist")
+                        .isTrue();
+            }
+        }
+    }
+}
