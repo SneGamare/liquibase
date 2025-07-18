@@ -1,1 +1,32 @@
+package com.kotak.plutus.liquibase.plutusliquibase.config;
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.sql.DataSource;
+import java.util.Map;
+
+@Configuration
+public class DataSourceConfig {
+
+    @Value("${spring.datasource.url}")
+    private String jdbcUrl;
+
+    @Value("${spring.datasource.driver-class-name}")
+    private String driverClassName;
+
+    @Bean
+    public DataSource dataSource(@Qualifier("dbSecrets") Map<String, String> secrets) {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername(secrets.get("db_postgres_username"));
+        config.setPassword(secrets.get("db_postgres_password"));
+        config.setDriverClassName(driverClassName);
+        return new HikariDataSource(config);
+    }
+}
 
